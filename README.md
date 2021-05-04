@@ -20,7 +20,7 @@ adduser USER sudo
 Packages that sooner or later will be needed in this setup.
 
 ```shell
-sudo apt-get -fy install curl wget git vim zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev software-properties-common libffi-dev apt-transport-https libgdbm-dev libncurses5-dev automake libtool bison libffi-dev dirmngr libgmp-dev pkg-config libgmp-dev libpq-dev ca-certificates gnupg2
+sudo apt-get -fy install curl wget git vim zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev software-properties-common libffi-dev apt-transport-https libgdbm-dev libncurses5-dev automake libtool bison libffi-dev dirmngr libgmp-dev pkg-config libgmp-dev libpq-dev ca-certificates gnupg2 lib32z1 lib32stdc++6
 ```
 
 ##### zsh
@@ -70,6 +70,14 @@ NodeJS and npm via nvm.
 ```shell
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.4/install.sh | bash
 source $HOME/.nvm/nvm.sh
+
+#open zshrc
+code ~/.zshrc
+
+#paste the code bellow at the end of the zshrc
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
 nvm ls-remote && nvm install --lts
 sudo ln -s $(which node) /usr/bin/node
 sudo ln -s $(which npm) /usr/bin/npm
@@ -78,9 +86,10 @@ sudo ln -s $(which npm) /usr/bin/npm
 ##### Yarn
 
 ```shell
+sudo apt remove cmdtest -y # this conflicts with yarn cli
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-sudo apt-get update && sudo apt-get -fy install yarn
+sudo apt update && sudo apt install --no-install-recommends -y yarn # no install recommended/obsolete nodejs
 ```
 
 Setup yarn global bin path, otherwise global packages won't work.
@@ -91,13 +100,13 @@ export YARN_GLOBAL_PATH=$(yarn global bin)
 export PATH=$PATH:$YARN_GLOBAL_PATH
 ```
 
-##### Ruby on Rails
+##### Ruby (2.5.1) and Ruby on Rails
 ```shell
-gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 curl -sSL https://get.rvm.io | bash -s stable
 source ~/.rvm/scripts/rvm
-rvm install 2.4.2
-rvm use 2.4.2 --default
+rvm install 2.5.1
+rvm use 2.5.1 --default
 ruby -v
 rm -f $HOME/.gemrc && touch $HOME/.gemrc && echo "gem: --no-ri --no-rdoc" >> $HOME/.gemrc
 rm -f $HOME/.irbrc && touch $HOME/.irbrc && echo "require 'awesome_print'\nAwesomePrint.irb!" >> $HOME/.irbrc
@@ -141,19 +150,32 @@ RPROMPT="\$(~/.rvm/bin/rvm-prompt s i v g)%{$fg[yellow]%}[%*]"
 
 ```shell
 sudo apt-get update && sudo apt-get -fy install postgresql postgresql-common postgresql-client
-sudo -u postgres createuser leonardo -s
+sudo -u postgres createuser <username> -s
 sudo -u postgres psql
-\password leonardo
+
+#postgres console will open
+\password <username>
+\q
 ```
 
 ##### Git
 ```shell
 git config --global color.ui true
-git config --global user.name "Leonardo Falk"
-git config --global user.email "wontputmyemailhere@"
-ssh-keygen -t rsa -b 4096 -C "wontputmyemailhere@"
-cat ~/.ssh/id_rsa.pub # and copy to github
+git config --global user.name <username>
+git config --global user.email <email_login_github>
+ssh-keygen -t rsa -b 4096 -C <email_login_github>
+
+#Generate ssh
+cat ~/.ssh/id_rsa.pub
+
+#After, copy the code printed on terminal, then go to [github.com > settings > ssh and gpg keys > new ssh], paste the code and put a name.
+#Run the test connection bellow.
+
 ssh -T git@github.com # test connection
+
+#OPTIONAL
+#To store your credentials, run the command bellow after a successful login on github via terminal. After a git clone, for example..
+git config --global credential.helper store
 ```
 
 ##### Docker
